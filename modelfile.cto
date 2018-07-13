@@ -1,0 +1,126 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/**
+ * Commodity trading network
+ */
+namespace org.example.trading
+
+asset Commodity identified by commodityID {
+  o String commodityID
+  o String commodityName
+  o String description
+  o String cameFrom
+  o String sendingTo
+  o Integer priceOfCom
+  o String transferStatus
+    --> Member owner
+}
+enum ListingState {
+  o FOR_SALE
+  o RESERVE_NOT_MET
+  o SOLD
+}
+
+asset CommodityListing identified by listingId {
+  o String listingId
+  o Double reservePrice
+  o String description
+  o ListingState state
+  o Offer[] offers optional
+  --> Commodity commodity
+}
+
+participant Member identified by memID {
+  o String memID
+  o String memberName
+  o String type
+  o Integer q1      //for Farmer "Defines the total quantity of commodity produced by a particular farmer"
+  o Integer qr1     //for Intermediary "Defines the total quantity of commodity required by the particular intermediary"
+  o Integer tc1     //for Intermediary "Defines the total quantity of commodity contained by the intermediary after buying"
+}
+
+transaction Offer {            //offer made by intermediaries to the farmer
+  o Integer bidPrice    
+  --> CommodityListing listing
+  --> Member member
+}
+
+transaction CloseBidding {     //best bid chosen and commodity transferred to that intermediary 
+  --> CommodityListing listing
+}
+
+
+participant LocalMandi identified by localMandiID {
+    o String localMandiID
+    o String localMandiName
+    o Integer p1
+    o Integer qr1
+    o Integer tc1
+    o Integer processingCostPerKg
+}
+
+participant DestinationMandi identified by destinationMandiID {
+    o String destinationMandiID
+    o String destinationMandiName
+    o Integer transportationCostPerKg
+    o Integer p1
+    o Integer qr1
+    o Integer tc1
+}
+participant Wholesaler identified by wholesalerID {
+    o String wholesalerID
+    o String wholesalerName
+    o Integer p1
+    o Integer qr1 
+    o Integer tc1
+}
+
+
+transaction SellToLocalMandi{
+  o String transactionID
+  o Integer qs1          // quantity of commodity to be sold
+  --> Commodity commodity
+  --> LocalMandi localMandi
+  --> Member member  
+}
+
+transaction SellToDestinationMandi{
+  o String transactionID
+  o Integer qs1         // quantity of commodity to be sold
+  --> Commodity commodity
+  --> LocalMandi localMandi
+  --> DestinationMandi destinationMandi 
+}
+
+transaction SellToWholesaler{
+  o String transactionID
+  o Integer qs1         // quantity of commodity to be sold
+  --> Commodity commodity
+  --> DestinationMandi destinationMandi 
+  --> Wholesaler wholesaler
+}
+
+event TransactionNotification {
+  --> Commodity commodity
+}
+
+event RemoveNotification {
+  --> Commodity commodity
+}
+
+
+
+
+
+
